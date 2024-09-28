@@ -12,27 +12,6 @@
 </head>
 
 <body>
-  <!-- aria-current="page"  -->
-  <!-- <ul class="nav nav-pills">
-      <li class="nav-item">
-        <a class="nav-link active" href="#job-overview">Overview</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="#personalize-form-wrapper">Personalize</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="#personalized-steps">Your Personalized Path</a>
-      </li>
-    </ul> -->
-  <div class="row">
-    <div class="col-4">
-      <div class="list-group">
-        <a class="list-group-item list-group-item-action" href="#job-overview">Overview</a>
-        <a class="list-group-item list-group-item-action" href="#personalize-form-wrapper">Personalize</a>
-        <a class="list-group-item list-group-item-action" href="#personalized-steps">Your Personalized Path</a>
-      </div>
-    </div>
-  </div>
   <div class="container">
     <h1>Career Counsellor</h1>
 
@@ -46,6 +25,20 @@
         <input type="search" name="jobTitle" placeholder="Or search other job" aria-label="Search" />
         <input type="submit" value="Search" />
       </form>
+
+      <nav aria-label="breadcrumb">
+        <ul>
+          <li>
+            <a class="nav-link active" href="#job-overview">Overview</a>
+          </li>
+          <li>
+            <a href="#personalize-form-wrapper">Personalize</a>
+          </li>
+          <li>
+            <a href="#personalized-steps">Your Personalized Path</a>
+          </li>
+        </ul>
+      </nav>
     </div>
 
     <div class="mb-3" id="job-overview" hidden>
