@@ -5,3 +5,11 @@
 .mb-3 {
   margin-bottom: 8px;
 }
+
+.text-happy {
+  padding: 0;
+  background: linear-gradient(to right, #d78dd2, #b999ee, #9da5e9, #8fa9f0);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}

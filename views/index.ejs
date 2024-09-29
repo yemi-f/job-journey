@@ -6,14 +6,14 @@
     <%= title %>
   </title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.indigo.min.css">
   <link rel="stylesheet" href="/stylesheets/style.css" />
   <script src="https://cdn.jsdelivr.net/npm/markdown-it@14.1.0/dist/markdown-it.min.js"></script>
 </head>
 
 <body>
   <div class="container">
-    <h1><%= title %></h1>
+    <h1 class="text-happy"><%= title %></h1>
 
     <div class="grid">
       <% ["Software Developer", "Data Scientist", "Project Manager"].forEach(job => { %>
@@ -26,13 +26,13 @@
         <input type="submit" value="Search" />
       </form>
 
-      <nav aria-label="breadcrumb">
+      <nav aria-label="breadcrumb" id="stepthrough-nav" hidden>
         <ul>
           <li>
             <a class="nav-link active" href="#job-overview">Overview</a>
           </li>
           <li>
-            <a href="#personalize-form-wrapper">Personalize</a>
+            <a href="#personalize-form-accordion">Personalize</a>
           </li>
           <li>
             <a href="#personalized-steps">Your Personalized Path</a>
@@ -41,90 +41,92 @@
       </nav>
     </div>
 
+    <progress id="job-overview-progress-bar" hidden></progress>
+    <!-- hidden -->
     <div class="mb-3" id="job-overview" hidden>
       <div class="content"></div>
-      <button id="show-personalize-form-btn" class="mb-3">
-        Personalize these results
-      </button>
+      <details id="personalize-form-accordion">
+        <summary role="button" id="toggle-personalize-form-btn" class="contrast">Personalize these results</summary>
+        <form class="" id="personalize-form">
+          <div class="mb-3">
+            <label for="educationLevel" class="form-label">What is your current level of education?</label>
+            <select class="form-select" id="educationLevel" name="educationLevel">
+              <option value="" selected>Select your education level</option>
+              <% ["High School Diploma","Associate's Degree","Bachelor's Degree", "Master's Degree", "Doctorate"].forEach(item=> { %>
+              <option value="<%= item %>">
+                <%= item %>
+              </option>
+              <% }) %>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Are you switching careers?</label>
+            <div class="form-check">
+              <label class="form-check-label"><input class="form-check-input" type="checkbox" name="careerChange" value="yes" /> Yes</label>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="currentJob" class="form-label">What is your current job?</label>
+            <input type="text" class="form-control" name="currentJob" id="currentJob" placeholder="Enter your current job role" />
+          </div>
+
+          <div class="mb-3">
+            <label for="learningStyle" class="form-label">How do you prefer to learn new skills?</label>
+            <select class="form-select" id="learningStyle" name="learningStyle">
+              <option value="" selected>Select your learning style</option>
+              <% ["Online Courses","In-person Classes","Bootcamps","Self-taught"].forEach(function(item,index){ %>
+              <option value="<%= item %>">
+                <%= item %>
+              </option>
+              <% }) %>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">How much time can you dedicate to learning new skills?</label>
+            <% ["Full-time", "Part-time" , "Weekends Only" ].forEach(item=> { %>
+            <div class="form-check">
+              <label class="form-check-label"><input class="form-check-input" type="radio" name="timeCommitment" value="<%= item %>" />
+                <%= item %>
+              </label>
+            </div>
+            <% }) %>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">How many years from now would you like to start working in this
+              field?</label>
+            <input type="number" class="form-control" id="autoSizingInputGroup" min="0" name="timeline" placeholder="Years" />
+          </div>
+
+          <div>
+            <button type="submit" class="btn btn-primary">
+              View personalized career path
+            </button>
+          </div>
+          <input type="hidden" name="jobOverviewMd" id="job-overview-md" />
+        </form>
+
+      </details>
     </div>
 
     <!-- hidden -->
-    <div class="mb-3" id="personalize-form-wrapper" hidden>
-      <form class="" id="personalize-form">
-        <div class="mb-3">
-          <label for="educationLevel" class="form-label">What is your current level of education?</label>
-          <select class="form-select" id="educationLevel" name="educationLevel">
-            <option value="" selected>Select your education level</option>
-            <% ["High School Diploma","Associate's Degree","Bachelor's Degree", "Master's Degree", "Doctorate"].forEach(item=> { %>
-            <option value="<%= item %>">
-              <%= item %>
-            </option>
-            <% }) %>
-          </select>
-        </div>
+    <!-- form moved to accordion (details) above -->
 
-        <div class="mb-3">
-          <label class="form-label">Are you switching careers?</label>
-          <div class="form-check">
-            <label class="form-check-label"><input class="form-check-input" type="checkbox" name="careerChange" value="yes" /> Yes</label>
-          </div>
-        </div>
-
-        <div class="mb-3">
-          <label for="currentJob" class="form-label">What is your current job?</label>
-          <input type="text" class="form-control" name="currentJob" id="currentJob" placeholder="Enter your current job role" />
-        </div>
-
-        <div class="mb-3">
-          <label for="learningStyle" class="form-label">How do you prefer to learn new skills?</label>
-          <select class="form-select" id="learningStyle" name="learningStyle">
-            <option value="" selected>Select your learning style</option>
-            <% ["Online Courses","In-person Classes","Bootcamps","Self-taught"].forEach(function(item,index){ %>
-            <option value="<%= item %>">
-              <%= item %>
-            </option>
-            <% }) %>
-          </select>
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label">How much time can you dedicate to learning new skills?</label>
-          <% ["Full-time", "Part-time" , "Weekends Only" ].forEach(item=> { %>
-          <div class="form-check">
-            <label class="form-check-label"><input class="form-check-input" type="radio" name="timeCommitment" value="<%= item %>" />
-              <%= item %>
-            </label>
-          </div>
-          <% }) %>
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label">How many years from now would you like to start working in this
-            field?</label>
-          <input type="number" class="form-control" id="autoSizingInputGroup" min="0" name="timeline" placeholder="Years" />
-        </div>
-
-        <div>
-          <button type="submit" class="btn btn-primary">
-            View personalized career path
-          </button>
-        </div>
-        <input type="hidden" name="jobOverviewMd" id="job-overview-md" />
-      </form>
-    </div>
-
-
-
+    <progress id="personalized-steps-progress-bar" hidden></progress>
     <!-- hidden -->
     <div class="mb-3" id="personalized-steps" hidden>
       <div class="content"></div>
     </div>
 
+    <!-- hidden -->
     <div id="actions-wrapper" hidden>
-      <button id="open-email-send-dialog-btn" class="btn btn-secondary">
+      <button id="open-email-send-dialog-btn" class="secondary me-2">
         <i class="ti ti-mail me-2"></i> Send to self
       </button>
-      <button id="download-btn" class="btn btn-secondary">
+      <button id="download-btn" class="primary">
         <i class="ti ti-download"></i> Download
       </button>
     </div>
@@ -156,12 +158,11 @@
     const personalizedSteps = document.getElementById("personalized-steps");
     const personalizedStepsContent =
       personalizedSteps.querySelector(".content");
-    const showPersonalizeFormBtn = document.getElementById(
-      "show-personalize-form-btn"
-    );
+    const jobOverviewProgressBar = document.getElementById('job-overview-progress-bar')
+    const personalizedStepsProgressBar = document.getElementById('personalized-steps-progress-bar')
 
-    const personalizeFormWrapper = document.getElementById(
-      "personalize-form-wrapper"
+    const personalizeFormAccordion = document.getElementById(
+      "personalize-form-accordion"
     );
     const personalizeForm = document.getElementById("personalize-form");
     let selectedJob = "";
@@ -225,10 +226,6 @@
       // handleInitialJobSearch(jobTitle);
     })
 
-    showPersonalizeFormBtn.addEventListener("click", () => {
-      personalizeFormWrapper.removeAttribute("hidden");
-    });
-
     personalizeForm.addEventListener("submit", (e) => {
       e.preventDefault();
       personalizedSteps.setAttribute("hidden", 1);
@@ -241,6 +238,7 @@
       });
 
       // return;
+      toggleElementVisibility(jobOverviewProgressBar)
 
       postData("/job-overview", {
           jobTitle
@@ -249,6 +247,7 @@
           console.log("Success:", response);
           jobOverviewMd.value = response;
           const html = md.render(response);
+          toggleElementVisibility(jobOverviewProgressBar)
 
           jobOverviewContent.innerHTML = html;
           jobOverview.removeAttribute("hidden");
@@ -272,15 +271,18 @@
 
       // return;
 
+      toggleElementVisibility(personalizedStepsProgressBar)
+
       postData("/personalized-path", formDataObj)
         .then((response) => {
           console.log("Success:", response);
           const html = md.render(response);
+          toggleElementVisibility(personalizedStepsProgressBar)
 
           personalizedStepsContent.innerHTML = html;
           personalizedSteps.removeAttribute("hidden");
 
-          // toggleElementVisibility(personalizeFormWrapper)
+          personalizeFormAccordion.removeAttribute('open')
         })
         .catch((error) => {
           console.error("Error:", error);
