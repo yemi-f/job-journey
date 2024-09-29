@@ -13,7 +13,7 @@
 
 <body>
   <div class="container">
-    <h1>Career Counsellor</h1>
+    <h1><%= title %></h1>
 
     <div class="grid">
       <% ["Software Developer", "Data Scientist", "Project Manager"].forEach(job => { %>
@@ -22,7 +22,7 @@
     </div>
     <div class="mb-3">
       <form role="search" id="job-search-form">
-        <input type="search" name="jobTitle" placeholder="Or search other job" aria-label="Search" />
+        <input type="search" name="jobTitle" placeholder="Or search other job" aria-label="Search" required />
         <input type="submit" value="Search" />
       </form>
 
@@ -43,13 +43,13 @@
 
     <div class="mb-3" id="job-overview" hidden>
       <div class="content"></div>
-      <button id="show-personalize-form-btn" class="btn btn-secondary">
+      <button id="show-personalize-form-btn" class="mb-3">
         Personalize these results
       </button>
     </div>
 
     <!-- hidden -->
-    <div class="mb-3" id="personalize-form-wrapper">
+    <div class="mb-3" id="personalize-form-wrapper" hidden>
       <form class="" id="personalize-form">
         <div class="mb-3">
           <label for="educationLevel" class="form-label">What is your current level of education?</label>
@@ -103,22 +103,24 @@
             field?</label>
           <input type="number" class="form-control" id="autoSizingInputGroup" min="0" name="timeline" placeholder="Years" />
         </div>
+
+        <div>
+          <button type="submit" class="btn btn-primary">
+            View personalized career path
+          </button>
+        </div>
+        <input type="hidden" name="jobOverviewMd" id="job-overview-md" />
+      </form>
     </div>
 
-    <div>
-      <button type="submit" class="btn btn-primary">
-        View personalized career path
-      </button>
-    </div>
-    <input type="hidden" name="jobOverviewMd" id="job-overview-md" />
-    </form>
+
 
     <!-- hidden -->
-    <div class="mb-3" id="personalized-steps">
+    <div class="mb-3" id="personalized-steps" hidden>
       <div class="content"></div>
     </div>
 
-    <div id="actions-wrapper">
+    <div id="actions-wrapper" hidden>
       <button id="open-email-send-dialog-btn" class="btn btn-secondary">
         <i class="ti ti-mail me-2"></i> Send to self
       </button>
@@ -128,12 +130,6 @@
     </div>
   </div>
 
-
-  <h1>
-    <%= title %>
-  </h1>
-  <p>Welcome to <%= title %>
-  </p>
 
   <dialog id="email-send-dialog">
     <article>
@@ -149,6 +145,7 @@
   </dialog>
 
   <script>
+    // TODO: put personalize form in accordion & collapse on results return
     const md = markdownit();
     const queries = new Set();
 
@@ -168,6 +165,8 @@
     );
     const personalizeForm = document.getElementById("personalize-form");
     let selectedJob = "";
+
+    const actionsWrapper = document.getElementById('actions-wrapper')
 
     const openEmailSendDialogBtn = document.getElementById('open-email-send-dialog-btn')
     const emailSendDialog = document.getElementById('email-send-dialog')
@@ -241,10 +240,10 @@
         jobTitle
       });
 
-      return;
+      // return;
 
       postData("/job-overview", {
-          jobTitle: "Dental Surgeon"
+          jobTitle
         }) //job-overview  /test-chat
         .then((response) => {
           console.log("Success:", response);
@@ -255,6 +254,8 @@
           jobOverview.removeAttribute("hidden");
           selectedJob = jobTitle;
           queries.add(jobTitle.toLowerCase());
+
+          toggleElementVisibility(actionsWrapper)
         })
         .catch((error) => {
           console.error("Error:", error);
@@ -269,7 +270,7 @@
       }
       console.log(formDataObj);
 
-      return;
+      // return;
 
       postData("/personalized-path", formDataObj)
         .then((response) => {
@@ -278,6 +279,8 @@
 
           personalizedStepsContent.innerHTML = html;
           personalizedSteps.removeAttribute("hidden");
+
+          // toggleElementVisibility(personalizeFormWrapper)
         })
         .catch((error) => {
           console.error("Error:", error);
@@ -304,6 +307,14 @@
       } catch (error) {
         console.error("Error posting data:", error);
         throw error;
+      }
+    }
+
+    function toggleElementVisibility(el) {
+      if (el.hasAttribute('hidden')) {
+        el.removeAttribute('hidden')
+      } else {
+        el.setAttribute('hidden', 1)
       }
     }
   </script>

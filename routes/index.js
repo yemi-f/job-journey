@@ -140,15 +140,24 @@ function generateJobOverviewPrompt(jobTitle) {
 
 function generatePersonalizedFollowUpPrompt(formData) {
   formData = removeEmptyValues(formData);
-  const { currentEducation, currentJob, careerChange, timeline } = formData;
+  const {
+    educationLevel,
+    careerChange,
+    currentJob,
+    timeCommitment,
+    learningStyle,
+    timeline,
+  } = formData;
   const builder = {
-    currentEducation: `My current education level is ${currentEducation}.`,
-    currentJob: `My current job is ${currentJob}.`,
+    educationLevel: `My current education level is ${educationLevel}.`,
     careerChange: `This is a career change.`,
+    currentJob: `My current job is ${currentJob}.`,
+    timeCommitment: `My time commitment is ${timeCommitment}.`,
+    learningStyle: `My learning style is ${learningStyle}.`,
     timeline: `My timeline is ${timeline} years.`,
   };
 
-  if (careerChange !== "on") {
+  if (careerChange !== "yes") {
     delete formData.careerChange;
   }
 
@@ -162,6 +171,17 @@ function generatePersonalizedFollowUpPrompt(formData) {
 
   return { role: "user", content: str };
 }
+
+// console.log(
+//   generatePersonalizedFollowUpPrompt({
+//     educationLevel: ``,
+//     careerChange: `yes`,
+//     currentJob: ``,
+//     timeCommitment: `Part-time`,
+//     learningStyle: `Self-taught`,
+//     timeline: `0.5`,
+//   })
+// );
 
 function removeEmptyValues(obj) {
   return Object.fromEntries(
