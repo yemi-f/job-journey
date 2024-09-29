@@ -105,32 +105,48 @@
         </div>
     </div>
 
-    <div class="col-auto">
+    <div>
       <button type="submit" class="btn btn-primary">
         View personalized career path
       </button>
     </div>
     <input type="hidden" name="jobOverviewMd" id="job-overview-md" />
     </form>
+
+    <!-- hidden -->
+    <div class="mb-3" id="personalized-steps">
+      <div class="content"></div>
+    </div>
+
+    <div id="actions-wrapper">
+      <button id="open-email-send-dialog-btn" class="btn btn-secondary">
+        <i class="bi bi-envelope me-2"></i>Send to self
+      </button>
+      <button id="download-btn" class="btn btn-secondary">
+        <i class="bi bi-download me-2"></i>Download
+      </button>
+    </div>
   </div>
 
-  <div class="mb-3" id="personalized-steps" hidden>
-    <div class="content"></div>
-    <button id="send-email-btn" class="btn btn-secondary">
-      <i class="bi bi-envelope me-2"></i>Send to self
-    </button>
-    <button id="download-btn" class="btn btn-secondary">
-      <i class="bi bi-download me-2"></i>Download
-    </button>
-  </div>
-  </div>
+
   <h1>
     <%= title %>
   </h1>
   <p>Welcome to <%= title %>
   </p>
-  <!-- <p id="current-chat" data-messages=""></p>
-  <button class="btn btn-primary" id="fetch-btn">Fetch</button> -->
+
+  <dialog id="email-send-dialog">
+    <article>
+      <h2>Send Email</h2>
+      <input type="email" name="email" id="email-send-input" placeholder="Email">
+      <footer>
+        <button id="cancel" class="secondary">
+          Cancel
+        </button>
+        <button id="email-send-btn">Send</button>
+      </footer>
+    </article>
+  </dialog>
 
   <script>
     const md = markdownit();
@@ -152,6 +168,42 @@
     );
     const personalizeForm = document.getElementById("personalize-form");
     let selectedJob = "";
+
+    const openEmailSendDialogBtn = document.getElementById('open-email-send-dialog-btn')
+    const emailSendDialog = document.getElementById('email-send-dialog')
+    const emailSendInput = document.getElementById('email-send-input')
+    const emailSendBtn = document.getElementById('email-send-btn')
+
+    openEmailSendDialogBtn.addEventListener('click', () => {
+      toggleEmailSendDialog()
+    })
+
+    emailSendDialog.querySelector(`button#cancel`).addEventListener('click', () => {
+      toggleEmailSendDialog()
+    })
+
+    document.addEventListener("keydown", (event) => {
+      const isEmailSendDialogOpen = emailSendDialog.hasAttribute('open');
+      if (event.key === "Escape" && isEmailSendDialogOpen) {
+        toggleEmailSendDialog();
+      }
+    });
+
+    emailSendBtn.addEventListener('click', () => {
+      const email = emailSendInput.value;
+      console.log({
+        email
+      })
+    })
+
+    function toggleEmailSendDialog() {
+      if (emailSendDialog.hasAttribute('open')) {
+        emailSendDialog.removeAttribute('open')
+      } else {
+        emailSendDialog.setAttribute('open', 1)
+      }
+    }
+
 
     const jobOverviewMd = document.getElementById("job-overview-md");
 
