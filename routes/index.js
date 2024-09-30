@@ -3,7 +3,6 @@ var router = express.Router();
 const brevo = require("@getbrevo/brevo");
 const OpenAI = require("openai");
 const fs = require("node:fs");
-const puppeteer = require("puppeteer");
 
 const openai = new OpenAI({
   organization: process.env.openai_organization_id,
@@ -16,7 +15,7 @@ apiKey.apiKey = process.env.brevo_api_key;
 
 /* GET home page. */
 router.get("/", function (req, res, next) {
-  res.render("index", { title: "CareerC" });
+  res.render("index", { title: "JobJourney" });
 });
 
 router.post("/job-overview", async function (req, res, next) {
@@ -72,12 +71,29 @@ router.post("/test-chat", function (req, res, next) {
   });
 });
 
+router.post("/test-chat-2", function (req, res, next) {
+  const { jobTitle } = req.body;
+  console.log({ jobTitle });
+  fs.readFile("personalized.md", "utf8", (err, data) => {
+    if (err) {
+      console.error(err);
+      res.send("big bad");
+      return;
+    }
+
+    res.send(data);
+  });
+});
+
 async function sendEmail(to, jobTitle = "", html = "") {
   let sendSmtpEmail = new brevo.SendSmtpEmail();
 
   sendSmtpEmail.subject = `Your Personalized Career Path - ${jobTitle}`;
   sendSmtpEmail.htmlContent = `<html><body>${html}</body></html>`;
-  sendSmtpEmail.sender = { name: "CareerC", email: "careerc@logarithm.ca" };
+  sendSmtpEmail.sender = {
+    name: "JobJourney",
+    email: "job.journey@logarithm.ca",
+  };
   sendSmtpEmail.to = [{ email: to }];
   return apiInstance.sendTransacEmail(sendSmtpEmail).then(
     function (data) {

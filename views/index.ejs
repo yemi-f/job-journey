@@ -13,7 +13,7 @@
 </head>
 
 <body>
-  <div class="container">
+  <div class="container py-3">
     <h1 class="text-happy"><%= title %></h1>
 
     <div class="grid">
@@ -43,7 +43,6 @@
     </div>
 
     <progress id="job-overview-progress-bar" hidden></progress>
-    <!-- hidden -->
     <div class="mb-3" id="job-overview" hidden>
       <div class="content"></div>
       <details id="personalize-form-accordion">
@@ -113,16 +112,11 @@
       </details>
     </div>
 
-    <!-- hidden -->
-    <!-- form moved to accordion (details) above -->
-
     <progress id="personalized-steps-progress-bar" hidden></progress>
-    <!-- hidden -->
     <div class="mb-3" id="personalized-steps" hidden>
       <div class="content"></div>
     </div>
 
-    <!-- hidden -->
     <div id="actions-wrapper" class="mb-3" hidden>
       <button id="open-email-send-dialog-btn" class="secondary me-2">
         <i class="ti ti-mail me-2"></i> Send to self
@@ -148,7 +142,7 @@
       </article>
     </dialog>
 
-    <footer>Made by Yemi in Ottawa 🏛️</footer>
+    <footer id="made-by">Made by <a href="https://github.com/yemi-f" target="_blank">Yemi</a> in Ottawa 🏛️</footer>
   </div>
 
 
@@ -165,6 +159,7 @@
       personalizedSteps.querySelector(".content");
     const jobOverviewProgressBar = document.getElementById('job-overview-progress-bar')
     const personalizedStepsProgressBar = document.getElementById('personalized-steps-progress-bar')
+    const madeByFooter = document.getElementById('made-by')
 
     const personalizeFormAccordion = document.getElementById(
       "personalize-form-accordion"
@@ -276,6 +271,7 @@
           jobOverviewMd.value = response;
           const html = md.render(response);
           toggleElementVisibility(jobOverviewProgressBar)
+          toggleElementVisibility(madeByFooter)
 
           jobOverviewContent.innerHTML = html;
           jobOverview.removeAttribute("hidden");
@@ -285,7 +281,9 @@
         })
         .catch((error) => {
           console.error("Error:", error);
-        });
+        }).finally(
+          toggleElementVisibility(madeByFooter)
+        );
     }
 
     function handlePersonalizeFormSubmit(params) {
@@ -300,11 +298,15 @@
 
       toggleElementVisibility(personalizedStepsProgressBar)
 
-      postData("/personalized-path", formDataObj)
+      postData("/test-chat-2", { ///personalized-path / test-chat-2
+          jobTitle: selectedJobTitle,
+          ...formDataObj
+        })
         .then((response) => {
           console.log("Success:", response);
           const html = md.render(response);
           toggleElementVisibility(personalizedStepsProgressBar)
+          toggleElementVisibility(madeByFooter)
 
           personalizedStepsContent.innerHTML = `<h1>Your Personalized Career Path</h1>` + html;
           personalizedSteps.removeAttribute("hidden");
@@ -313,7 +315,9 @@
         })
         .catch((error) => {
           console.error("Error:", error);
-        });
+        }).finally(
+          toggleElementVisibility(madeByFooter)
+        );
     }
 
     async function postData(url = "", data = {}) {
@@ -347,36 +351,11 @@
       }
     }
 
-    function handleEmailSend() {
-      const overview = jobOverviewContent.innerHTML;
-      const personalizedPath = personalizedStepsContent.innerHTML;
-      const body = [overview, personalizedPath]
-
-      postData("/send-email", {
-          jobTitle: selectedJobTitle,
-          body,
-          email: "yemifakorede@gmail.com"
-        })
-        .then((response) => {
-          console.log("Success:", response);
-        })
-        .catch((error) => {
-          console.error("Error:", error);
-        });
-    }
-
     function printContentAsPDF() {
-      // Get the content
       const content = jobOverviewContent.innerHTML + personalizedStepsContent.innerHTML;
-
-      // Create a new window
       const printWindow = window.open('', '', 'height=600,width=800');
 
-      // Write the content to the new window
       printWindow.document.write(`<html><head><title>${selectedJobTitle}</title>`);
-      // printWindow.document.write('<style>');
-      // printWindow.document.write(document.querySelector('style').innerHTML);
-      // printWindow.document.write('</style>');
       printWindow.document.write('</head><body>');
       printWindow.document.write(content);
       printWindow.document.write('</body></html>');
@@ -384,7 +363,7 @@
       printWindow.document.close();
       printWindow.focus();
 
-      // Use a setTimeout to ensure the content is loaded before printing
+      // to ensure the content is loaded before printing
       setTimeout(function() {
         printWindow.print();
         printWindow.close();
@@ -397,8 +376,7 @@
       } = window.jspdf;
       const doc = new jsPDF();
 
-      const content = jobOverviewContent;
-      const elements = content.children;
+      const elements = [...jobOverviewContent.children, ...personalizedStepsContent.children];
 
       let yOffset = 10;
       let listItemCounter = 1;
@@ -418,12 +396,15 @@
       for (let element of elements) {
         switch (element.tagName.toLowerCase()) {
           case 'h1':
-            addTextToPDF(element.textContent, 18);
+            addTextToPDF(element.textContent, 20);
             break;
           case 'h2':
-            addTextToPDF(element.textContent, 16);
+            addTextToPDF(element.textContent, 18);
             break;
           case 'h3':
+            addTextToPDF(element.textContent, 16);
+            break;
+          case 'h4':
             addTextToPDF(element.textContent, 14);
             break;
           case 'p':
