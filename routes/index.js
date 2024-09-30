@@ -187,17 +187,6 @@ function generatePersonalizedFollowUpPrompt(formData) {
   return { role: "user", content: str };
 }
 
-// console.log(
-//   generatePersonalizedFollowUpPrompt({
-//     educationLevel: ``,
-//     careerChange: `yes`,
-//     currentJob: ``,
-//     timeCommitment: `Part-time`,
-//     learningStyle: `Self-taught`,
-//     timeline: `0.5`,
-//   })
-// );
-
 function removeEmptyValues(obj) {
   return Object.fromEntries(
     Object.entries(obj).filter(

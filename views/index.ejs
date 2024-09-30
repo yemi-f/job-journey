@@ -134,6 +134,7 @@
         <h2>Send Email</h2>
         <input type="email" name="email" id="email-send-input" placeholder="Email">
         <footer>
+          <span id="email-send-msg" class="me-2"></span>
           <button id="cancel" class="secondary">
             Cancel
           </button>
@@ -147,7 +148,6 @@
 
 
   <script>
-    // TODO: put personalize form in accordion & collapse on results return
     const md = markdownit();
 
     const jobSearchForm = document.getElementById('job-search-form')
@@ -173,6 +173,7 @@
     const emailSendDialog = document.getElementById('email-send-dialog')
     const emailSendInput = document.getElementById('email-send-input')
     const emailSendBtn = document.getElementById('email-send-btn')
+    const emailSendMsg = document.getElementById('email-send-msg')
 
     const downloadPersonalizedPathBtn = document.getElementById('download-btn')
     const printBtn = document.getElementById('print-btn')
@@ -198,16 +199,38 @@
       const personalizedPath = personalizedStepsContent.innerHTML;
       const body = [overview, personalizedPath]
 
+      if (!email.length) {
+        emailSendMsg.textContent = "Email is required";
+        emailSendMsg.style.color = "red"
+        return;
+      }
+
       postData("/send-email", {
           jobTitle: selectedJobTitle,
           body,
           email
-        })
+        }, 'json')
         .then((response) => {
-          console.log("Success:", response);
+          console.log("Success:", response.success);
+          if (response.success) {
+            console.log("email sent success")
+            emailSendMsg.textContent = "Email sent";
+            emailSendMsg.style.color = "green"
+            emailSendMsg.style.fontWeight = "bold"
+            emailSendInput.value = ''
+          } else {
+            emailSendMsg.textContent = "Failed to send email";
+            emailSendMsg.style.color = "red"
+          }
         })
         .catch((error) => {
           console.error("Error:", error);
+          emailSendMsg.textContent = "Failed to send email";
+          emailSendMsg.style.color = "red"
+        }).finally(() => {
+          setTimeout(() => {
+            emailSendMsg.textContent = '';
+          }, 5000);
         });
     })
 
@@ -320,7 +343,7 @@
         );
     }
 
-    async function postData(url = "", data = {}) {
+    async function postData(url, data, responseType = 'text') {
       try {
         const response = await fetch(url, {
           method: "POST",
@@ -334,9 +357,15 @@
           throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const textResponse = await response.text();
+        let textOrJsonResponse;
 
-        return textResponse;
+        if (responseType === "text") {
+          textOrJsonResponse = await response.text()
+        } else if (responseType === "json") {
+          textOrJsonResponse = await response.json()
+        }
+
+        return textOrJsonResponse;
       } catch (error) {
         console.error("Error posting data:", error);
         throw error;
