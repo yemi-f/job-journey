@@ -3,8 +3,7 @@ var router = express.Router();
 const brevo = require("@getbrevo/brevo");
 const OpenAI = require("openai");
 const fs = require("node:fs");
-
-let assistantResponse = { role: "assistant", content: "" };
+const puppeteer = require("puppeteer");
 
 const openai = new OpenAI({
   organization: process.env.openai_organization_id,
@@ -17,7 +16,6 @@ apiKey.apiKey = process.env.brevo_api_key;
 
 /* GET home page. */
 router.get("/", function (req, res, next) {
-  // sendEmail();
   res.render("index", { title: "CareerC" });
 });
 
@@ -32,25 +30,32 @@ router.post("/job-overview", async function (req, res, next) {
   res.send(chat);
 });
 
+router.post("/send-email", async function (req, res, next) {
+  const { body, jobTitle, email } = req.body;
+  if (!body.length || !jobTitle.length) {
+    return res.json({ success: false });
+  }
+
+  const html = body.join("");
+  const success = await sendEmail(email, jobTitle, html);
+
+  return res.json({ success });
+});
+
 router.post("/personalized-path", async function (req, res, next) {
   const jobOverviewMd = req.body.jobOverviewMd;
+  const jobTitle = req.body.jobTitle;
   const formData = req.body;
+
   delete formData.jobOverviewMd;
-  const chat = await createChatCompletion(
-    "Data Scientist",
-    jobOverviewMd,
-    formData
-  );
+  delete formData.jobTitle;
+
+  const chat = await createChatCompletion(jobTitle, jobOverviewMd, formData);
   if (!chat) {
     res.send("nothing found");
   }
 
   res.send(chat);
-});
-
-router.get("/fetch", function (req, res, next) {
-  console.log("fetch endpoint called");
-  res.json({ message: "good things ahead" });
 });
 
 router.post("/test-chat", function (req, res, next) {
@@ -67,27 +72,21 @@ router.post("/test-chat", function (req, res, next) {
   });
 });
 
-function sendEmail(jobTitle = "", htmlContent = "") {
+async function sendEmail(to, jobTitle = "", html = "") {
   let sendSmtpEmail = new brevo.SendSmtpEmail();
 
   sendSmtpEmail.subject = `Your Personalized Career Path - ${jobTitle}`;
-  sendSmtpEmail.htmlContent =
-    "<html><body><h1>Common: This is my second transactional email {{params.parameter}}</h1></body></html>";
+  sendSmtpEmail.htmlContent = `<html><body>${html}</body></html>`;
   sendSmtpEmail.sender = { name: "CareerC", email: "careerc@logarithm.ca" };
-  sendSmtpEmail.to = [{ email: "yemifakorede@gmail.com", name: "Yemi F" }];
-  // sendSmtpEmail.replyTo = { email: "example@brevo.com", name: "sample-name" };
-  // sendSmtpEmail.headers = { "Some-Custom-Name": "unique-id-1234" };
-  sendSmtpEmail.params = {
-    parameter: "My param value",
-    subject: "common subject",
-  };
-
-  apiInstance.sendTransacEmail(sendSmtpEmail).then(
+  sendSmtpEmail.to = [{ email: to }];
+  return apiInstance.sendTransacEmail(sendSmtpEmail).then(
     function (data) {
-      console.log("API called successfully");
+      console.log("API called successfully", data.response.statusCode);
+      return data.response.statusCode === 201;
     },
     function (error) {
       console.error(error);
+      return false;
     }
   );
 }

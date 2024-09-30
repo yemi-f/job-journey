@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.indigo.min.css">
   <link rel="stylesheet" href="/stylesheets/style.css" />
   <script src="https://cdn.jsdelivr.net/npm/markdown-it@14.1.0/dist/markdown-it.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 
 <body>
@@ -122,34 +123,38 @@
     </div>
 
     <!-- hidden -->
-    <div id="actions-wrapper" hidden>
+    <div id="actions-wrapper" class="mb-3" hidden>
       <button id="open-email-send-dialog-btn" class="secondary me-2">
         <i class="ti ti-mail me-2"></i> Send to self
+      </button>
+      <button id="print-btn" class="secondary me-2">
+        <i class="ti ti-printer me-2"></i> Print
       </button>
       <button id="download-btn" class="primary">
         <i class="ti ti-download"></i> Download
       </button>
     </div>
+
+    <dialog id="email-send-dialog">
+      <article>
+        <h2>Send Email</h2>
+        <input type="email" name="email" id="email-send-input" placeholder="Email">
+        <footer>
+          <button id="cancel" class="secondary">
+            Cancel
+          </button>
+          <button id="email-send-btn">Send</button>
+        </footer>
+      </article>
+    </dialog>
+
+    <footer>Made by Yemi in Ottawa 🏛️</footer>
   </div>
 
-
-  <dialog id="email-send-dialog">
-    <article>
-      <h2>Send Email</h2>
-      <input type="email" name="email" id="email-send-input" placeholder="Email">
-      <footer>
-        <button id="cancel" class="secondary">
-          Cancel
-        </button>
-        <button id="email-send-btn">Send</button>
-      </footer>
-    </article>
-  </dialog>
 
   <script>
     // TODO: put personalize form in accordion & collapse on results return
     const md = markdownit();
-    const queries = new Set();
 
     const jobSearchForm = document.getElementById('job-search-form')
     const predefinedJobTitleBtns = document.querySelectorAll(".predefined-job-title");
@@ -165,7 +170,7 @@
       "personalize-form-accordion"
     );
     const personalizeForm = document.getElementById("personalize-form");
-    let selectedJob = "";
+    let selectedJobTitle = "";
 
     const actionsWrapper = document.getElementById('actions-wrapper')
 
@@ -173,6 +178,9 @@
     const emailSendDialog = document.getElementById('email-send-dialog')
     const emailSendInput = document.getElementById('email-send-input')
     const emailSendBtn = document.getElementById('email-send-btn')
+
+    const downloadPersonalizedPathBtn = document.getElementById('download-btn')
+    const printBtn = document.getElementById('print-btn')
 
     openEmailSendDialogBtn.addEventListener('click', () => {
       toggleEmailSendDialog()
@@ -191,9 +199,29 @@
 
     emailSendBtn.addEventListener('click', () => {
       const email = emailSendInput.value;
-      console.log({
-        email
-      })
+      const overview = jobOverviewContent.innerHTML;
+      const personalizedPath = personalizedStepsContent.innerHTML;
+      const body = [overview, personalizedPath]
+
+      postData("/send-email", {
+          jobTitle: selectedJobTitle,
+          body,
+          email
+        })
+        .then((response) => {
+          console.log("Success:", response);
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+        });
+    })
+
+    downloadPersonalizedPathBtn.addEventListener('click', () => {
+      downloadTextPDF()
+    })
+
+    printBtn.addEventListener('click', () => {
+      printContentAsPDF()
     })
 
     function toggleEmailSendDialog() {
@@ -240,19 +268,18 @@
       // return;
       toggleElementVisibility(jobOverviewProgressBar)
 
-      postData("/job-overview", {
+      postData("/test-chat", {
           jobTitle
         }) //job-overview  /test-chat
         .then((response) => {
-          console.log("Success:", response);
+          // console.log("Success:", response);
           jobOverviewMd.value = response;
           const html = md.render(response);
           toggleElementVisibility(jobOverviewProgressBar)
 
           jobOverviewContent.innerHTML = html;
           jobOverview.removeAttribute("hidden");
-          selectedJob = jobTitle;
-          queries.add(jobTitle.toLowerCase());
+          selectedJobTitle = toTitleCase(jobTitle);
 
           toggleElementVisibility(actionsWrapper)
         })
@@ -279,7 +306,7 @@
           const html = md.render(response);
           toggleElementVisibility(personalizedStepsProgressBar)
 
-          personalizedStepsContent.innerHTML = html;
+          personalizedStepsContent.innerHTML = `<h1>Your Personalized Career Path</h1>` + html;
           personalizedSteps.removeAttribute("hidden");
 
           personalizeFormAccordion.removeAttribute('open')
@@ -318,6 +345,113 @@
       } else {
         el.setAttribute('hidden', 1)
       }
+    }
+
+    function handleEmailSend() {
+      const overview = jobOverviewContent.innerHTML;
+      const personalizedPath = personalizedStepsContent.innerHTML;
+      const body = [overview, personalizedPath]
+
+      postData("/send-email", {
+          jobTitle: selectedJobTitle,
+          body,
+          email: "yemifakorede@gmail.com"
+        })
+        .then((response) => {
+          console.log("Success:", response);
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+        });
+    }
+
+    function printContentAsPDF() {
+      // Get the content
+      const content = jobOverviewContent.innerHTML + personalizedStepsContent.innerHTML;
+
+      // Create a new window
+      const printWindow = window.open('', '', 'height=600,width=800');
+
+      // Write the content to the new window
+      printWindow.document.write(`<html><head><title>${selectedJobTitle}</title>`);
+      // printWindow.document.write('<style>');
+      // printWindow.document.write(document.querySelector('style').innerHTML);
+      // printWindow.document.write('</style>');
+      printWindow.document.write('</head><body>');
+      printWindow.document.write(content);
+      printWindow.document.write('</body></html>');
+
+      printWindow.document.close();
+      printWindow.focus();
+
+      // Use a setTimeout to ensure the content is loaded before printing
+      setTimeout(function() {
+        printWindow.print();
+        printWindow.close();
+      }, 250);
+    }
+
+    function downloadTextPDF() {
+      const {
+        jsPDF
+      } = window.jspdf;
+      const doc = new jsPDF();
+
+      const content = jobOverviewContent;
+      const elements = content.children;
+
+      let yOffset = 10;
+      let listItemCounter = 1;
+
+      function addTextToPDF(text, fontSize, indent = 0) {
+        doc.setFontSize(fontSize);
+        const lines = doc.splitTextToSize(text, 190 - indent);
+        doc.text(lines, 10 + indent, yOffset);
+        yOffset += 5 * lines.length;
+
+        if (yOffset > 280) {
+          doc.addPage();
+          yOffset = 10;
+        }
+      }
+
+      for (let element of elements) {
+        switch (element.tagName.toLowerCase()) {
+          case 'h1':
+            addTextToPDF(element.textContent, 18);
+            break;
+          case 'h2':
+            addTextToPDF(element.textContent, 16);
+            break;
+          case 'h3':
+            addTextToPDF(element.textContent, 14);
+            break;
+          case 'p':
+            addTextToPDF(element.textContent, 12);
+            break;
+          case 'ul':
+          case 'ol':
+            for (let li of element.children) {
+              let prefix = element.tagName.toLowerCase() === 'ul' ? '• ' : `${listItemCounter}. `;
+              addTextToPDF(prefix + li.textContent, 12, 5);
+              if (element.tagName.toLowerCase() === 'ol') listItemCounter++;
+            }
+            listItemCounter = 1;
+            break;
+        }
+        yOffset += 5; // add some space between elements
+      }
+
+      const filename = selectedJobTitle.split(" ").join("_")
+      doc.save(`${filename}.pdf`);
+    }
+
+    function toTitleCase(str) {
+      return str
+        .toLowerCase()
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
     }
   </script>
 </body>
