@@ -20,7 +20,7 @@ router.get("/", function (req, res, next) {
 
 router.post("/job-overview", async function (req, res, next) {
   const { jobTitle } = req.body;
-  const chat = await createChatCompletion("Data Scientist");
+  const chat = await createChatCompletion(jobTitle);
   console.log({ jobTitle });
   if (!chat) {
     res.send("nothing found");
