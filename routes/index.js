@@ -97,7 +97,6 @@ async function sendEmail(to, jobTitle = "", html = "") {
   sendSmtpEmail.to = [{ email: to }];
   return apiInstance.sendTransacEmail(sendSmtpEmail).then(
     function (data) {
-      console.log("API called successfully", data.response.statusCode);
       return data.response.statusCode === 201;
     },
     function (error) {
@@ -180,7 +179,6 @@ function generatePersonalizedFollowUpPrompt(formData) {
     "Given the following information, show me a personalized career path. ";
 
   for (const key in formData) {
-    console.log(key);
     str += `${builder[key]} `;
   }
 
