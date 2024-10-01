@@ -75,9 +75,7 @@ emailSendBtn.addEventListener("click", () => {
     "json"
   )
     .then((response) => {
-      console.log("Success:", response.success);
       if (response.success) {
-        console.log("email sent success");
         emailSendMsg.textContent = "Email sent";
         emailSendMsg.style.color = "green";
         emailSendMsg.style.fontWeight = "bold";
@@ -126,10 +124,6 @@ jobSearchForm.addEventListener("submit", (e) => {
   e.preventDefault();
   const formData = new FormData(e.target);
   const jobTitle = formData.get("jobTitle");
-  console.log({
-    jobTitle,
-  });
-
   handleInitialJobSearch(jobTitle);
 });
 
@@ -140,18 +134,12 @@ personalizeForm.addEventListener("submit", (e) => {
 });
 
 async function handleInitialJobSearch(jobTitle) {
-  console.log({
-    jobTitle,
-  });
-
-  // return;
   toggleElementVisibility(jobOverviewProgressBar);
   const url = TEST_MODE ? "/test-chat" : "/job-overview";
   postData(url, {
     jobTitle,
-  }) //job-overview  /test-chat
+  })
     .then((response) => {
-      // console.log("Success:", response);
       jobOverviewMd.value = response;
       const html = md.render(response);
       toggleElementVisibility(jobOverviewProgressBar);
@@ -175,17 +163,14 @@ function handlePersonalizeFormSubmit(params) {
   for (const [key, value] of formData.entries()) {
     formDataObj[key] = value;
   }
-  console.log(formDataObj);
 
   toggleElementVisibility(personalizedStepsProgressBar);
   const url = TEST_MODE ? "/test-chat-2" : "/personalized-path";
   postData(url, {
-    ///personalized-path / test-chat-2
     jobTitle: selectedJobTitle,
     ...formDataObj,
   })
     .then((response) => {
-      console.log("Success:", response);
       const html = md.render(response);
       toggleElementVisibility(personalizedStepsProgressBar);
       toggleElementVisibility(madeByFooter);
