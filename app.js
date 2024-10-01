@@ -8,7 +8,8 @@ require("dotenv").config();
 var indexRouter = require("./routes/index");
 
 var app = express();
-const port = process.env.PORT || 8080;
+const port = process.env.PORT || 3004;
+console.log({ port });
 
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
