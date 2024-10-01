@@ -5,13 +5,13 @@ const OpenAI = require("openai");
 const fs = require("node:fs");
 
 const openai = new OpenAI({
-  organization: process.env.openai_organization_id,
-  apiKey: process.env.openai_api_key,
+  organization: process.env.OPENAI_ORGANIZATION_ID,
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
 let apiInstance = new brevo.TransactionalEmailsApi();
 let apiKey = apiInstance.authentications["apiKey"];
-apiKey.apiKey = process.env.brevo_api_key;
+apiKey.apiKey = process.env.BREVO_API_KEY;
 
 /* GET home page. */
 router.get("/", function (req, res, next) {
